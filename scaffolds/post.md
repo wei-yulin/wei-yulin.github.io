@@ -1,5 +1,6 @@
 ---
 title: {{ title }}
 date: {{ date }}
-tags:
+tags: java
+categories: 技术
 ---
