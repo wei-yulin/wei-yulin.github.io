@@ -107,7 +107,7 @@ theme: fluid
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: https://github.com/wei-yulin/wei-yulin.github.io
+  repo: git@github.com:wei-yulin/wei-yulin.github.io.git
   branch: master
   token: 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
 
