@@ -130,6 +130,11 @@ h6 {
     color: #777;
 }
 
+strong {
+    color: #be0000;
+    font-weight: bold;
+}
+
 p,
 blockquote,
 ul,
@@ -274,3 +279,4 @@ code {
 .md-task-list-item > input {
   margin-left: -1.3em;
 }
+
