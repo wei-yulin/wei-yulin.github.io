@@ -240,6 +240,67 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
         
+        <a href="/2022/06/27/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-AQS%E5%90%8C%E6%AD%A5%E5%99%A8%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" target="_self">
+          Java并发编程-AQS同步器源码解析
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2022/06/27/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-AQS%E5%90%8C%E6%AD%A5%E5%99%A8%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" target="_self">
+        <div>
+          一、CLH队列锁学习AQS之前先来了解下CLH队列锁，即 Craig, Landin, and Hagersten (CLH) locks。顾名思义，该锁维护了一个队列，每个节点代表一个线程，结构图如下：当一个线程想要获取锁，首先把自己包装成一个队列节点，该节点需要记录前驱节点和一个是否需要获取锁的标识blocked默认值为true的，然后在前驱节点的blocked属性上进行自旋，知道前驱节点释放
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2022-06-27 13:57" pubdate>
+              2022-06-27
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/java/" class="category-chain-item">java</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">#并发编程</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
         <a href="/2022/06/27/terminal%E9%85%8D%E7%BD%AEgit/" target="_self">
           terminal配置git
         </a>
