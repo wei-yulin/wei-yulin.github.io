@@ -1,0 +1,783 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="weiyulin">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="一、Synchroinzed锁synchroinzed锁又称为内置锁，之前提到过进程中的线程是共享进程内所有资源的，当多个线程对同一个资源执行操作时，如果不加锁可能会导致最终结果和预期结果不符，如下代码： 123456789101112131415161718192021222324252627282930313233343536public class SynchronizedTest &amp;#12">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java并发编程-synchronized、volatile和threadlocal">
+<meta property="og:url" content="https://wei-yulin.github.io/2022/06/26/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-synchronized%E3%80%81volatile%E5%92%8CThread-Local/index.html">
+<meta property="og:site_name" content="耗子扛刀满街找猫">
+<meta property="og:description" content="一、Synchroinzed锁synchroinzed锁又称为内置锁，之前提到过进程中的线程是共享进程内所有资源的，当多个线程对同一个资源执行操作时，如果不加锁可能会导致最终结果和预期结果不符，如下代码： 123456789101112131415161718192021222324252627282930313233343536public class SynchronizedTest &amp;#12">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200423214359565.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200424144134690.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200424144340140.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020042414455461.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200424185246548.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200424190850316.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200424192244326.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200424192505955.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200424193506308.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="article:published_time" content="2022-06-26T11:20:22.000Z">
+<meta property="article:modified_time" content="2022-06-27T02:15:40.987Z">
+<meta property="article:author" content="weiyulin">
+<meta property="article:tag" content="并发编程">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200423214359565.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70">
+  
+  
+  
+  <title>java并发编程-synchronized、volatile和threadlocal - 耗子扛刀满街找猫</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"wei-yulin.github.io","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"tcJanixr29L7wmYUTTgOeNsv-gzGzoHsz","app_key":"LbHz0v1yNR7yIvWfsVCSEdeM","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>耗子扛刀满街找猫</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="java并发编程-synchronized、volatile和threadlocal"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-06-26 19:20" pubdate>
+          2022年6月26日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          85 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">java并发编程-synchronized、volatile和threadlocal</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="一、Synchroinzed锁"><a href="#一、Synchroinzed锁" class="headerlink" title="一、Synchroinzed锁"></a>一、<strong>Synchroinzed锁</strong></h3><p>synchroinzed锁又称为内置锁，之前提到过进程中的线程是共享进程内所有资源的，当多个线程对同一个资源执行操作时，如果不加锁可能会导致最终结果和预期结果不符，如下代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SynchronizedTest</span> &#123;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-type">long</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">()</span> &#123;<br>            i++;<br>    &#125;<br><br>    <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SynTest</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span> &#123;<br><br>        SynchronizedTest synchronizedTest;<br><br>        <span class="hljs-keyword">public</span> <span class="hljs-title function_">SynTest</span><span class="hljs-params">(SynchronizedTest synchronizedTest)</span> &#123;<br>            <span class="hljs-built_in">this</span>.synchronizedTest = synchronizedTest;<br>        &#125;<br><br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;<span class="hljs-number">10000</span> ; i++) &#123;<br>                synchronizedTest.add();<br>            &#125;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-type">SynchronizedTest</span> <span class="hljs-variable">s</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SynchronizedTest</span>();<br>        <span class="hljs-comment">// 线程一</span><br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">SynTest</span>(s)).start();<br>        <span class="hljs-comment">//线程二</span><br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">SynTest</span>(s)).start();<br>        SleepTools.second(<span class="hljs-number">2</span>);<br>        System.out.println(<span class="hljs-string">&quot;结果：&quot;</span>+s.i);<br>    &#125;<br>&#125;<br>输出：<br>结果：<span class="hljs-number">18876</span><br></code></pre></td></tr></table></figure>
+
+<p>输出的结果和预期的20000并不一样，这是因为两个线程同时对该值进行操作，每个线程执行加一操作时需要做两个步骤，首先获取到i的值，然后加一再写到内存；当线程一刚取到值但是还没写，线程二也取值，两个线程都完成加一回写时，实际上这两个线程写的是同一个值。<br>这时候就需要加锁，关键字synchronized 可以修饰方法或者以同步块的形式来进行使用，它主要确保多个线程在同一个时刻，只能有一个线程处于方法或者同步块中，它保证了线程对变量访问的可见性和排他性。</p>
+<ol>
+<li>修饰方法</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">synchronized</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">()</span> &#123;<br>            i++;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>修饰代码块</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">synchronized</span> (<span class="hljs-built_in">this</span>) &#123; <span class="hljs-comment">//this指当前实例对象</span><br>            i++;<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>修饰成员变量</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> Object o=<span class="hljs-keyword">new</span> <span class="hljs-title class_">Object</span>();<br><br>   <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">()</span> &#123;<br>       <span class="hljs-keyword">synchronized</span> (o) &#123;<br>           i++;<br>       &#125;<br>   &#125;<br></code></pre></td></tr></table></figure>
+
+<p>这个和修饰代码块里的this道理是一样的，都是锁的某个对象。</p>
+<ol start="4">
+<li>修饰静态方法</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">synchronized</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">()</span> &#123;<br>            i++;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>当synchronized修饰静态方法或静态成员变量时有人说是类锁，实际上锁的虚拟机中该类所对应的class对象，本质上还是类锁。</p>
+<ol start="5">
+<li><p>面试题<br><strong>对象锁和类锁可以并行运行吗？</strong><br>面试经常回问到这个问题，就如上面所说的，类锁锁的是xxx.class对象，对象锁锁的是‘对象xxx’，锁的不是同一个对象肯定是可以并行的。</p>
+</li>
+<li><p><strong>synchroized错误使用</strong>，如下代码：</p>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadStart</span> &#123;<br><br>    <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyRunnable</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span> &#123;<br><br>        <span class="hljs-keyword">private</span> Integer i;<br><br>        <span class="hljs-keyword">public</span> <span class="hljs-title function_">MyRunnable</span><span class="hljs-params">(Integer i)</span> &#123;<br>            <span class="hljs-built_in">this</span>.i = i;<br>        &#125;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-keyword">synchronized</span> (i) &#123;<br>                Thread thread=Thread.currentThread();<br>                System.out.println(thread.getName()+<span class="hljs-string">&quot;==开始==&quot;</span>+i+<span class="hljs-string">&quot;@&quot;</span>+System.identityHashCode(i));<br>                i++;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    Thread.sleep(<span class="hljs-number">1000</span>);<br>                &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                    e.printStackTrace();<br>                &#125;<br>                System.out.println(thread.getName()+<span class="hljs-string">&quot;==结束==&quot;</span>+i+<span class="hljs-string">&quot;@&quot;</span>+System.identityHashCode(i)); <span class="hljs-comment">//identityHashCode方法可以理解为内存中的地址</span><br>            &#125;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        MyRunnable a=<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyRunnable</span>(<span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;<span class="hljs-number">5</span> ; i++) &#123;<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(a).start();<br>        &#125;<br>    &#125;<br>&#125;<br>输出结果：<br>Thread-<span class="hljs-number">0</span>==开始==<span class="hljs-number">1</span>@<span class="hljs-number">351452368</span><br>Thread-<span class="hljs-number">1</span>==开始==<span class="hljs-number">2</span>@<span class="hljs-number">733316467</span><br>Thread-<span class="hljs-number">2</span>==开始==<span class="hljs-number">3</span>@<span class="hljs-number">696436475</span><br>Thread-<span class="hljs-number">3</span>==开始==<span class="hljs-number">4</span>@<span class="hljs-number">2019092735</span><br>Thread-<span class="hljs-number">1</span>==结束==<span class="hljs-number">5</span>@<span class="hljs-number">628256373</span><br>Thread-<span class="hljs-number">0</span>==结束==<span class="hljs-number">5</span>@<span class="hljs-number">628256373</span><br>Thread-<span class="hljs-number">3</span>==结束==<span class="hljs-number">5</span>@<span class="hljs-number">628256373</span><br>Thread-<span class="hljs-number">4</span>==开始==<span class="hljs-number">5</span>@<span class="hljs-number">628256373</span><br>Thread-<span class="hljs-number">2</span>==结束==<span class="hljs-number">6</span>@<span class="hljs-number">658845115</span><br>Thread-<span class="hljs-number">4</span>==结束==<span class="hljs-number">6</span>@<span class="hljs-number">658845115</span><br></code></pre></td></tr></table></figure>
+
+<p>按照预期，每个线程都对i进行加一，但实际结果thread-0起始值为1结束值为5，且地址也由351452368变为了628256373。从代码看明显是锁到了i且是同一个对象，为什么会出现这个异常？难道是没锁住？<br>我们把这个类反编译一下，结果如下：<br><img src="https://img-blog.csdnimg.cn/20200423214359565.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>从反编译的结果我们可以看到，当执行i++的时候实际返回的结果是Integer.valueOf(this.i.intValue() + 1);我们再去Integer类看看这个方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Integer <span class="hljs-title function_">valueOf</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span> &#123;<br>        <span class="hljs-keyword">if</span> (i &gt;= IntegerCache.low &amp;&amp; i &lt;= IntegerCache.high)<br>            <span class="hljs-keyword">return</span> IntegerCache.cache[i + (-IntegerCache.low)];<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Integer</span>(i);<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>返回的是new Integer对象，那上边的问题就能够讲的通了，当每个线程执行++操作时，i实际都指向了另一个对象，synchroinzed关键字锁的是对象，这里强调的是同一个对象，这段代码当有一个线程返回时这个锁的对象就会发生变化，所有就出现了如上的输出。</p>
+<p><strong>那么这个锁应该怎么加呢？</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadStart</span> &#123;<br><br>    <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyRunnable</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span> &#123;<br><br>        <span class="hljs-keyword">private</span> Integer i;<br><br>        <span class="hljs-keyword">private</span> Object o=<span class="hljs-keyword">new</span> <span class="hljs-title class_">Object</span>();<br><br>        <span class="hljs-keyword">public</span> <span class="hljs-title function_">MyRunnable</span><span class="hljs-params">(Integer i)</span> &#123;<br>            <span class="hljs-built_in">this</span>.i = i;<br>        &#125;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-keyword">synchronized</span> (o) &#123;<br>                Thread thread=Thread.currentThread();<br>                System.out.println(thread.getName()+<span class="hljs-string">&quot;==开始==&quot;</span>+i+<span class="hljs-string">&quot;@&quot;</span>+System.identityHashCode(i));<br>                i++;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    Thread.sleep(<span class="hljs-number">1000</span>);<br>                &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                    e.printStackTrace();<br>                &#125;<br>                System.out.println(thread.getName()+<span class="hljs-string">&quot;==结束==&quot;</span>+i+<span class="hljs-string">&quot;@&quot;</span>+System.identityHashCode(i)); <span class="hljs-comment">//identityHashCode方法可以理解为内存中的地址</span><br>            &#125;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        MyRunnable a=<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyRunnable</span>(<span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;<span class="hljs-number">5</span> ; i++) &#123;<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(a).start();<br>        &#125;<br>    &#125;<br>&#125;<br>输出：<br>Thread-<span class="hljs-number">0</span>==开始==<span class="hljs-number">1</span>@<span class="hljs-number">351452368</span><br>Thread-<span class="hljs-number">0</span>==结束==<span class="hljs-number">2</span>@<span class="hljs-number">439697470</span><br>Thread-<span class="hljs-number">4</span>==开始==<span class="hljs-number">2</span>@<span class="hljs-number">439697470</span><br>Thread-<span class="hljs-number">4</span>==结束==<span class="hljs-number">3</span>@<span class="hljs-number">1488227252</span><br>Thread-<span class="hljs-number">3</span>==开始==<span class="hljs-number">3</span>@<span class="hljs-number">1488227252</span><br>Thread-<span class="hljs-number">3</span>==结束==<span class="hljs-number">4</span>@<span class="hljs-number">2019092735</span><br>Thread-<span class="hljs-number">2</span>==开始==<span class="hljs-number">4</span>@<span class="hljs-number">2019092735</span><br>Thread-<span class="hljs-number">2</span>==结束==<span class="hljs-number">5</span>@<span class="hljs-number">696436475</span><br>Thread-<span class="hljs-number">1</span>==开始==<span class="hljs-number">5</span>@<span class="hljs-number">696436475</span><br>Thread-<span class="hljs-number">1</span>==结束==<span class="hljs-number">6</span>@<span class="hljs-number">733316467</span><br></code></pre></td></tr></table></figure>
+
+<p>我们锁一个不会变化的对象就可以了，检查结果也是符合预期的。</p>
+<h3 id="二、volatile"><a href="#二、volatile" class="headerlink" title="二、volatile"></a>二、volatile</h3><p>volatile是最轻量级的同步机制，一旦一个共享变量（类的成员变量、类的静态成员变量）被volatile修饰之后，那么就具备了两层语义</p>
+<ol>
+<li>保证了不同线程对这个变量进行操作时的可见性，即一个线程修改了某个变量的值，这新值对其他线程来说是立即可见的。</li>
+<li>禁止进行指令重排序。</li>
+</ol>
+<p>第一条比较好理解，主要是理解第二条，指令重排序的定义如下：</p>
+<blockquote>
+<p>为了尽可能减少内存操作速度远慢于CPU运行速度所带来的CPU空置的影响，虚拟机会按照自己的一些规则将程序编写顺序打乱——即写在后面的代码在时间顺序上可能会先执行，而写在前面的代码会后执行——以尽可能充分地利用CPU，但最终的执行结果不变。</p>
+</blockquote>
+<p>volatile只是保证可见性，即只是保证读一直性并不保证写只能有一个线程写，如下代码验证：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">VolatileTest</span> &#123;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">volatile</span> <span class="hljs-type">int</span> i;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">VolatileTest</span><span class="hljs-params">(<span class="hljs-type">int</span> i)</span> &#123;<br>        <span class="hljs-built_in">this</span>.i = i;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">add</span><span class="hljs-params">()</span> &#123;<br>        i++;<br>    &#125;<br><br>    <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyRunnable</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span> &#123;<br>        VolatileTest volatileTest;<br><br>        <span class="hljs-keyword">public</span> <span class="hljs-title function_">MyRunnable</span><span class="hljs-params">(VolatileTest volatileTest)</span> &#123;<br>            <span class="hljs-built_in">this</span>.volatileTest = volatileTest;<br>        &#125;<br><br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;<span class="hljs-number">10000</span> ; i++) &#123;<br>                volatileTest.add();<br>            &#125;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        VolatileTest v=<span class="hljs-keyword">new</span> <span class="hljs-title class_">VolatileTest</span>(<span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyRunnable</span>(v)).start();<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyRunnable</span>(v)).start();<br><br>        <span class="hljs-keyword">try</span> &#123;<br>            Thread.sleep(<span class="hljs-number">2000</span>);<br>        &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>            e.printStackTrace();<br>        &#125;<br><br>        System.out.println(<span class="hljs-string">&quot;i=&quot;</span>+v.i);<br>    &#125;<br>&#125;<br>输出：<br>i=<span class="hljs-number">19695</span><br></code></pre></td></tr></table></figure>
+
+<p>所以，volatile关键字适合一写多读的场景。</p>
+<h3 id="三、ThreadLocal"><a href="#三、ThreadLocal" class="headerlink" title="三、ThreadLocal"></a>三、ThreadLocal</h3><p>ThreadLocal类的作用是在多线程编程下，保证线程间数据的隔离，实现的方法就是为每个线程维护一个变量的副本。<br><strong>1. ThreadLocal使用</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs java">    <span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadLocalTest</span> &#123;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ThreadLocal&lt;Integer&gt; age=<span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;Integer&gt;()&#123;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">protected</span> Integer <span class="hljs-title function_">initialValue</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>        &#125;<br>    &#125;;<br><br><span class="hljs-comment">//    private static int age=1;</span><br><br>    <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyRunnable</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span> &#123;<br>        <span class="hljs-keyword">private</span> <span class="hljs-type">int</span> number;<br><br>        <span class="hljs-keyword">public</span> <span class="hljs-title function_">MyRunnable</span><span class="hljs-params">(<span class="hljs-type">int</span> number)</span> &#123;<br>            <span class="hljs-built_in">this</span>.number = number;<br>        &#125;<br><br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>            Thread thread=Thread.currentThread();<br>            System.out.println(thread.getName()+<span class="hljs-string">&quot;==start==&quot;</span>+age.get());<br>            <span class="hljs-keyword">try</span> &#123;<br>                Thread.sleep(<span class="hljs-number">100</span>);<br>            &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                e.printStackTrace();<br>            &#125;<br><span class="hljs-comment">//            number=age.get()+number;</span><br>            age.set(number+age.get());<br><br>            System.out.println(thread.getName()+<span class="hljs-string">&quot;==end==&quot;</span>+age.get());<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        ThreadLocalTest threadLocalTest=<span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocalTest</span>();<br><br>        Thread[] threads=<span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>[<span class="hljs-number">3</span>];<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;<span class="hljs-number">3</span> ; i++) &#123;<br>            threads[i]=<span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyRunnable</span>(i));<br>        &#125;<br>        <span class="hljs-keyword">for</span> (Thread thread : threads) &#123;<br>            thread.start();<br>        &#125;<br>    &#125;<br>&#125;<br>输出：<br>Thread-<span class="hljs-number">0</span>==start==<span class="hljs-number">1</span><br>Thread-<span class="hljs-number">2</span>==start==<span class="hljs-number">1</span><br>Thread-<span class="hljs-number">1</span>==start==<span class="hljs-number">1</span><br>Thread-<span class="hljs-number">1</span>==end==<span class="hljs-number">2</span><br>Thread-<span class="hljs-number">0</span>==end==<span class="hljs-number">1</span><br>Thread-<span class="hljs-number">2</span>==end==<span class="hljs-number">3</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>2. ThreadLocal的实现解析</strong><br><img src="https://img-blog.csdnimg.cn/20200424144134690.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>声明一个ThreadLocal类型的属性，每个线程都会维护自己的一个ThreadLocalMap属性，查看Thread原密会发现这个属性<img src="https://img-blog.csdnimg.cn/20200424144340140.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>可看到该属性是专门为ThreadLocal设计的，而ThreadLocalMap又是ThreadLocal的内部类，查看ThreadLocal源码：<img src="https://img-blog.csdnimg.cn/2020042414455461.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>可以看到有个 Entry 内部静态类，它继承了 WeakReference，总之它记录了两个信息，一个是 ThreadLocal&lt;?&gt;类型，一个是 Object 类型的值。getEntry 方法则是获取某个 ThreadLocal 对应的值，set 方法就是更新或赋值相应的 ThreadLocal<br>对应的值。<br>ThreadLocal的值获取流程就是，先获取当前线程的ThreadLocalMap属性，然后根据当前ThreadLocal的实例获取map中的Entry对象，即获取了值。</p>
+<p><strong>3. ThreadLocal使用不当可能造成内存溢出</strong><br>先看如下代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadLocalOOMl</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span> &#123;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> TASK_MAX_LOOP=<span class="hljs-number">500</span>;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> ThreadPoolExecutor threadPoolExecutor=<span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadPoolExecutor</span>(<span class="hljs-number">5</span>,<span class="hljs-number">5</span>,<span class="hljs-number">1</span>,<br>            TimeUnit.MINUTES,<span class="hljs-keyword">new</span> <span class="hljs-title class_">LinkedBlockingQueue</span>&lt;&gt;());<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">LocalVariable</span>(); <span class="hljs-comment">//执行创建数组</span><br>    &#125;<br><br>    <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LocalVariable</span>&#123;<br>        <span class="hljs-keyword">private</span> <span class="hljs-type">byte</span>[] b=<span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">1024</span>*<span class="hljs-number">1024</span>*<span class="hljs-number">5</span>]; <span class="hljs-comment">//创建一个5M的数组</span><br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;TASK_MAX_LOOP ; i++) &#123;<br>            threadPoolExecutor.execute(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocalOOMl</span>());<br>            System.out.println(<span class="hljs-string">&quot;not use threadLocal!&quot;</span>);<br>            <span class="hljs-keyword">try</span> &#123;<br>                Thread.sleep(<span class="hljs-number">100</span>);<br>            &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                e.printStackTrace();<br>            &#125;<br>        &#125;<br><br>        System.out.println(<span class="hljs-string">&quot;thread excute over!&quot;</span>);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p>使用jdk自带的jvm监控工具（位置在bin&#x2F;jvisualvm.exe），查看堆的使用大小如下：<br><img src="https://img-blog.csdnimg.cn/20200424185246548.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>我们线程池的大小是5，也就是最多5个线程同时运行，占用的堆内存基本维持在25M以下这是正常的。有人可能会问每个线程new一个5M的数组为什么只有25M？看下代码new ThreadLocalOOMl()，我们每次只是在堆上new了一个对象，该对象并没有被引用，所以该对象会被回收，所以堆的内存大概只有25M。</p>
+<p>使用ThreadLocal代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadLocalOOMl</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span> &#123;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> TASK_MAX_LOOP=<span class="hljs-number">500</span>;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> ThreadPoolExecutor threadPoolExecutor=<span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadPoolExecutor</span>(<span class="hljs-number">5</span>,<span class="hljs-number">5</span>,<span class="hljs-number">1</span>,<br>            TimeUnit.MINUTES,<span class="hljs-keyword">new</span> <span class="hljs-title class_">LinkedBlockingQueue</span>&lt;&gt;());<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> ThreadLocal&lt;LocalVariable&gt; localVariable=<span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;&gt;();<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>        localVariable.set(<span class="hljs-keyword">new</span> <span class="hljs-title class_">LocalVariable</span>()); <span class="hljs-comment">//每个线程维护一个threadLocal副本</span><br>    &#125;<br><br>    <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LocalVariable</span>&#123;<br>        <span class="hljs-keyword">private</span> <span class="hljs-type">byte</span>[] b=<span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">1024</span>*<span class="hljs-number">1024</span>*<span class="hljs-number">5</span>]; <span class="hljs-comment">//创建一个5M的数组</span><br>    &#125;<br><br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;TASK_MAX_LOOP ; i++) &#123;<br>            threadPoolExecutor.execute(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocalOOMl</span>());<br>            System.out.println(<span class="hljs-string">&quot;use threadLocal!&quot;</span>);<br>            <span class="hljs-keyword">try</span> &#123;<br>                Thread.sleep(<span class="hljs-number">100</span>);<br>            &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                e.printStackTrace();<br>            &#125;<br>        &#125;<br><br>        System.out.println(<span class="hljs-string">&quot;thread excute over!&quot;</span>);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<p><img src="https://img-blog.csdnimg.cn/20200424190850316.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>我们的预期结果应该是和不使用threadLocal一致大概25M左右，实际上最高已经来到250左右，出现了内存溢出。这是为什么呢？接下来分析</p>
+<p>分析之前先说以下java里的几种引用：</p>
+<ol>
+<li>强引用<br>就是指在程序代码之中普遍存在的，类似“Object obj&#x3D;new Object（）”这类的引用，只要强引用还存在，垃圾收集器永远不会回收掉被引用的对象实例。</li>
+<li>软引用<br>用来描述一些还有用但并非必需的对象。对于软引用关联着的对象，在系统将要发生内存溢出异常之前，将会把这些对象实例列进回收范围之中进行第二次回收。如果这次回收还没有足够的内存，才会抛出内存溢出异常。在 JDK1.2 之后，提供了 SoftReference 类来实现软引用。</li>
+<li>弱引用<br>用来描述非必需对象的，但是它的强度比软引用更弱一些，被弱引用关联的对象实例只能生存到下一次垃圾收集发生之前。当垃圾收集器工作时，无论当前内存是否足够，都会回收掉只被弱引用关联的对象实例。在 JDK 1.2 之后，提供了WeakReference 类来实现弱引用。</li>
+<li>虚引用也称为幽灵引用或者幻影引用<br>它是最弱的一种引用关系。一个对象实例是否有虚引用的存在，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一个对象设置虚引用关联的唯一目的就是能在这个对象实例被收集器回收时收到一个系统通知。在 JDK 1.2 之后，提供了PhantomReference 类来实现虚引用。</li>
+</ol>
+<p>再来梳理以下ThreadLocal这个类，每个线程维护了一个ThreadLocalMap对象，它的key是ThreadLocal对象，值是Entry数组，真正存储数据的是Enter，<br>查看源码我们会发现Entry对ThreadLocal引用是弱引用<br><img src="https://img-blog.csdnimg.cn/20200424192244326.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>前边说过当发生内存回收的时候，ThreadLocal会被回收，所有使用ThreadLocal后整个调用关系可用如下图描述：<br><img src="https://img-blog.csdnimg.cn/20200424192505955.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>当发生内存回收时，ThradLocal对象被回收，此时该对象所对应的Entry的value将会永远不会被访问，而Entry对该值是强引用，所以该value无法被回收这就造成了内存泄露。除非当线程结束时，下方的调用链就是被回收，但是我们这里使用了线程池，线程不会结束。。。那么怎么办呢？<br>其实只要在你使用完这个值，主动把这个值释放掉就可以了，代码修改比较简单：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Override</span><br>  <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>      localVariable.set(<span class="hljs-keyword">new</span> <span class="hljs-title class_">LocalVariable</span>()); <span class="hljs-comment">//每个线程维护一个threadLocal副本</span><br>      System.out.println(<span class="hljs-string">&quot;我获取到了值，可以释放了...&quot;</span>);<br>      localVariable.remove();<br>  &#125;<br></code></pre></td></tr></table></figure>
+
+<p>使用完调用remove()方法，就会释放该值，可以查看remove的源码，发现最终会调到expungeStaleEntry()释放没用的Entry。查看堆的大小就正常了<br><img src="https://img-blog.csdnimg.cn/20200424193506308.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI0ODYzNzQz,size_16,color_FFFFFF,t_70#pic_center" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br><strong>所以，在使用线程池和ThreadLocal的时候要注意这个问题，在使用完值后一定要记得释放。</strong></p>
+<h3 id="四、总结"><a href="#四、总结" class="headerlink" title="四、总结"></a>四、总结</h3><p>synchronized解决了多线程编程下的数据共享问题，而ThreadLocal则是实现了线程间的隔离。但如果使用的不好也能造成其他的问题，一定要牢记。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/java/" class="category-chain-item">java</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">#并发编程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>java并发编程-synchronized、volatile和threadlocal</div>
+      <div>https://wei-yulin.github.io/2022/06/26/java并发编程-synchronized、volatile和Thread-Local/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>weiyulin</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年6月26日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/06/26/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-wait%E3%80%81notify%E3%80%81notifyAll/" title="java并发编程-wait、notify、notifyAll">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">java并发编程-wait、notify、notifyAll</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/06/26/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="java并发编程-线程基础">
+                        <span class="hidden-mobile">java并发编程-线程基础</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.4.17/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"tcJanixr29L7wmYUTTgOeNsv-gzGzoHsz","appKey":"LbHz0v1yNR7yIvWfsVCSEdeM","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -13,24 +13,25 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
   <meta name="theme-color" content="#2f4154">
-  <meta name="author" content="耗子扛刀满街找猫">
+  <meta name="author" content="weiyulin">
   <meta name="keywords" content="">
   
-    <meta property="og:type" content="article">
-<meta property="og:title" content="newTitle">
-<meta property="og:url" content="https://wei-yulin.github.io/2022/06/24/newTitle/index.html">
-<meta property="og:site_name" content="一砖又一砖">
+    <meta name="description" content="老话说在前头：工欲善其事，必先利其器。想要玩转 macOS 的终端，想要用的顺手、看着高端，折腾是必不可少的。 第一步，安装 HomeBrew作为 macOS 必备的包管理工具，相信大家肯定已经很熟悉了，没安装的朋友可以执行下面命令装一下，安装过的可以执行下面命令可以进行更新。 1&#x2F;usr&#x2F;bin&#x2F;ruby -e &quot;$(curl -fsSL &lt;https:&#x2F;&#x2F;raw.githubu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="terminal配置git">
+<meta property="og:url" content="https://wei-yulin.github.io/2022/06/27/terminal%E9%85%8D%E7%BD%AEgit/index.html">
+<meta property="og:site_name" content="耗子扛刀满街找猫">
+<meta property="og:description" content="老话说在前头：工欲善其事，必先利其器。想要玩转 macOS 的终端，想要用的顺手、看着高端，折腾是必不可少的。 第一步，安装 HomeBrew作为 macOS 必备的包管理工具，相信大家肯定已经很熟悉了，没安装的朋友可以执行下面命令装一下，安装过的可以执行下面命令可以进行更新。 1&#x2F;usr&#x2F;bin&#x2F;ruby -e &quot;$(curl -fsSL &lt;https:&#x2F;&#x2F;raw.githubu">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://wei-yulin.github.io/2022/06/24/newTitle/newTitle.png">
-<meta property="article:published_time" content="2022-06-24T07:39:09.000Z">
-<meta property="article:modified_time" content="2022-06-24T11:22:33.012Z">
-<meta property="article:author" content="耗子扛刀满街找猫">
+<meta property="article:published_time" content="2022-06-27T05:14:47.000Z">
+<meta property="article:modified_time" content="2022-06-27T05:15:58.673Z">
+<meta property="article:author" content="weiyulin">
+<meta property="article:tag" content="zsh、git">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://wei-yulin.github.io/2022/06/24/newTitle/newTitle.png">
   
   
   
-  <title>newTitle - 一砖又一砖</title>
+  <title>terminal配置git - 耗子扛刀满街找猫</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -111,7 +112,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>一砖又一砖</strong>
+      <strong>耗子扛刀满街找猫</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -212,7 +213,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="newTitle"></span>
+            <span id="subtitle" data-typed-text="terminal配置git"></span>
           
         </div>
 
@@ -223,8 +224,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-06-24 15:39" pubdate>
-          2022年6月24日 下午
+        <time datetime="2022-06-27 13:14" pubdate>
+          2022年6月27日 下午
         </time>
       </span>
     
@@ -235,7 +236,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 字
+          2k 字
         
       </span>
     
@@ -246,7 +247,7 @@
         
         
         
-          1 分钟
+          17 分钟
         
       </span>
     
@@ -292,12 +293,52 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">newTitle</h1>
+            <h1 style="display: none">terminal配置git</h1>
             
             
               <div class="markdown-body">
                 
-                <img src="/2022/06/24/newTitle/newTitle.png" srcset="/img/loading.gif" lazyload class="" title="This is an example image">
+                <p>老话说在前头：工欲善其事，必先利其器。想要玩转 macOS 的终端，想要用的顺手、看着高端，折腾是必不可少的。</p>
+<h3 id="第一步，安装-HomeBrew"><a href="#第一步，安装-HomeBrew" class="headerlink" title="第一步，安装 HomeBrew"></a><strong>第一步，安装 <a target="_blank" rel="noopener" href="https://brew.sh/index_zh-cn.html">HomeBrew</a></strong></h3><p>作为 macOS 必备的包管理工具，相信大家肯定已经很熟悉了，没安装的朋友可以执行下面命令装一下，安装过的可以执行下面命令可以进行更新。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">/usr/bin/ruby -e <span class="hljs-string">&quot;<span class="hljs-subst">$(curl -fsSL &lt;https://raw.githubusercontent.com/Homebrew/install/master/install&gt;)</span>&quot;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="第二步，更新-zsh、git"><a href="#第二步，更新-zsh、git" class="headerlink" title="第二步，更新 zsh、git"></a><strong>第二步，更新 zsh、git</strong></h3><p>macOS 一般会自带 zsh，不过版本会比较早，我们先更新一下，以便使用最新特性。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">brew install zsh<br><br>==&gt; Downloading &lt;https://homebrew.bintray.com/bottles/zsh-5.7.1.high_sierra.bottle.tar.gz&gt;<br><span class="hljs-comment">######################################################################## 100.0%</span><br>==&gt; Pouring zsh-5.7.1.high_sierra.bottle.tar.gz<br>/usr/local/Cellar/zsh/5.7.1: 1,515 files, 13.3MB<br></code></pre></td></tr></table></figure>
+
+<h3 id="第三步，切换至-zsh-并安装-oh-my-zsh"><a href="#第三步，切换至-zsh-并安装-oh-my-zsh" class="headerlink" title="第三步，切换至 zsh 并安装 oh-my-zsh"></a><strong>第三步，切换至 zsh 并安装 oh-my-zsh</strong></h3><p>查看当前使用的 shell</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">echo</span> <span class="hljs-variable">$SHELL</span><br><br>/bin/bash<br></code></pre></td></tr></table></figure>
+
+<p>查看安装的 shell</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cat</span> /etc/shells<br><br>/bin/bash<br>/bin/csh<br>/bin/ksh<br>/bin/sh<br>/bin/tcsh<br>/bin/zsh<br></code></pre></td></tr></table></figure>
+
+<p>切换为 zsh</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">chsh -s /bin/zsh<br></code></pre></td></tr></table></figure>
+
+<p>重启终端即可使用 zsh。</p>
+<p>接下来安装 oh-my-zsh</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">sh -c <span class="hljs-string">&quot;<span class="hljs-subst">$(curl -fsSL &lt;https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh&gt;)</span>&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>安装完成后，终端展示如下内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">  ____  / /_     ____ ___  __  __   ____  _____/ /_<br> / __ \\/ __ \\   / __ `__ \\/ / / /  /_  / / ___/ __ \\<br>/ /_/ / / / /  / / / / / / /_/ /    / /_(__  ) / / /<br>\\____/_/ /_/  /_/ /_/ /_/\\__, /    /___/____/_/ /_/<br>                        /____/                       ....is now installed!<br><br>Please look over the ~/.zshrc file to select plugins, themes, and options.<br><br>p.s. Follow us at &lt;https://twitter.com/ohmyzsh&gt;.<br><br>p.p.s. Get stickers and t-shirts at &lt;http://shop.planetargon.com&gt;.<br></code></pre></td></tr></table></figure>
+
+<h3 id="第四步，配置-oh-my-zsh"><a href="#第四步，配置-oh-my-zsh" class="headerlink" title="第四步，配置 oh-my-zsh"></a><strong>第四步，配置 oh-my-zsh</strong></h3><p>看到这里，安装流程已经完毕啦，执行最后的配置，就可以进行体验了。</p>
+<p>打开 oh-my-zsh 配置文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 打开 zshrc 文件进行编辑，也可以使用 vim 编辑器</span><br>open ~/.zshrc<br><span class="hljs-comment"># 本人使用的是 vs code</span><br>open ~/.zshrc -a Visual\\ Studio\\ Code<br></code></pre></td></tr></table></figure>
+
+<p><strong>主题</strong></p>
+<p>配置项 <code>ZSH_THEME</code> 即为 oh-my-zsh 的主题配置，oh-my-zsh 的 GitHub Wiki 页面提供了 <a target="_blank" rel="noopener" href="https://github.com/robbyrussell/oh-my-zsh/wiki/themes">主题列表</a>当设置为 <code>ZSH_THEME=random</code> 时，每次打开终端都会使用一种随机的主题。</p>
+<p><strong>插件</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">plugins=(git osx autojump zsh-autosuggestions zsh-syntax-highlighting)<br></code></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong>其中 zsh-autosuggestions 和 zsh-syntax-highlighting 是自定义安装的插件，需要用 git 将插件 clone 到指定插件目录下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 自动提示插件</span><br>git <span class="hljs-built_in">clone</span> &lt;https://github.com/zsh-users/zsh-autosuggestions.git&gt; <span class="hljs-variable">$ZSH_CUSTOM</span>/plugins/zsh-autosuggestions<br><span class="hljs-comment"># 语法高亮插件</span><br>git <span class="hljs-built_in">clone</span> &lt;https://github.com/zsh-users/zsh-syntax-highlighting.git&gt; <span class="hljs-variable">$ZSH_CUSTOM</span>/plugins/zsh-syntax-highlighting<br></code></pre></td></tr></table></figure>
+
+<p>需要其他插件的可以自行安装，如果插件未安装，开启终端的时候会报错，按照错误提示，安装对应的插件即可。</p>
+<p>更新配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">source</span> ~/.zshrc<br></code></pre></td></tr></table></figure>
+
+<p>更新完配置即可生效，不想更新配置的话，新开一个终端同样可以生效。</p>
+<p>正所谓风雨之后见彩虹，经过这一番捣鼓，电脑用起来更加顺手了，可以愉快的开发了。</p>
 
                 
               </div>
@@ -306,6 +347,34 @@
             <div>
               <div class="post-metas my-3">
   
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%9C%BA%E5%99%A8%E9%85%8D%E7%BD%AE/" class="category-chain-item">机器配置</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/zsh%E3%80%81git/">#zsh、git</a>
+      
+    </div>
   
 </div>
 
@@ -315,20 +384,20 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>newTitle</div>
-      <div>https://wei-yulin.github.io/2022/06/24/newTitle/</div>
+      <div>terminal配置git</div>
+      <div>https://wei-yulin.github.io/2022/06/27/terminal配置git/</div>
     </div>
     <div class="license-meta">
       
         <div class="license-meta-item">
           <div>作者</div>
-          <div>耗子扛刀满街找猫</div>
+          <div>weiyulin</div>
         </div>
       
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年6月24日</div>
+          <div>2022年6月27日</div>
         </div>
       
       
@@ -358,15 +427,15 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/06/24/hello-world/" title="Hello World">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Hello World</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
+                    
+                      <a href="/2022/06/26/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B-wait%E3%80%81notify%E3%80%81notifyAll/" title="java并发编程-wait、notify、notifyAll">
+                        <span class="hidden-mobile">java并发编程-wait、notify、notifyAll</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
                     
                   </article>
                 </div>
