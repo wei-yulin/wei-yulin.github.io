@@ -130,11 +130,6 @@ h6 {
     color: #777;
 }
 
-strong {
-    color: #be0000;
-    font-weight: bold;
-}
-
 p,
 blockquote,
 ul,
@@ -280,3 +275,7 @@ code {
   margin-left: -1.3em;
 }
 
+.page-content, .post-content
+  strong
+    font-weight bold
+    color #be0000
