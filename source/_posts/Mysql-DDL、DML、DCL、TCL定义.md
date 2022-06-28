@@ -3,6 +3,7 @@ title: Mysql-DDL、DML、DCL、TCL定义
 tags: DDL、DML、DCL、TCL定义
 categories: MYSQL
 date: 2022-06-28 13:21:01
+
 ---
 
 ### 1.DDL（Data Definition Language）数据库定义语言
@@ -38,13 +39,14 @@ GRANT 授权
 REVOKE 取消授权
 
 ### 4.TCL（Transaction Control Language）事务控制语言
+
 SAVEPOINT 设置保存点
 ROLLBACK  回滚
 SET TRANSACTION
 
 ### 5.结论
 
-**SQL主要分成四部分：**
+SQL主要分成四部分：
 
 （1）数据定义。（SQL DDL）用于定义SQL模式、基本表、视图和索引的创建和撤消操作。
 （2）数据操纵。（SQL DML）数据操纵分成数据查询和数据更新两类。数据更新又分成插入、删除、和修改三种操作。

@@ -139,18 +139,14 @@ table{
     margin: 0.8em 0;
 }
 
+/*首行缩进
 p {
-    text-indent: 2em; /*首行缩进*/
+    text-indent: 2em; 
 }
 li > p {
     text-indent: 0;
 }
-
-.markdown-body > strong {
-    color: #be0000;
-    font-weight: bold;
-}
-
+*/
 
 li>ol,
 li>ul {
@@ -275,7 +271,7 @@ code {
   margin-left: -1.3em;
 }
 
-.page-content, .post-content
-  strong
-    font-weight bold
-    color #be0000
+.page-content, .post-content > strong {
+  font-weight bold
+  color #be0000
+}
